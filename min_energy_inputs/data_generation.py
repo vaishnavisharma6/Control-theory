@@ -1,40 +1,34 @@
 # data generation script for minimum energy control inputs
-
 import numpy as np
 import matplotlib.pyplot as plt
 import math
-
-# function which takes A, B, IS and control horizon, giving inputs and outputs
+import os
 
 def state_space(A, B, xi, U, T):
-  
-  # given xi at time t= 0 and u vectors over control horizon T, return xf at time T
+             
   for i in range(0, T):
-     xc = np.dot(A, xi) + np.dot(B, U[:, i])
+     xc = np.dot(A, xi) + np.dot(B, np.reshape(U[:, i], (4,1)))                          # return state at time T
      xi = xc
-  
+    
   return(xi)
 
 
 
-def data_gen(A, B, xi, T):
-
-  # given A, B, xf, x0, and T, return a dataset of xi, xf, T and umin.
+def data_gen(A, B, xi, T):                                    # save data
   p = np.dot(A, A)
   pr = np.dot(A,B)
   CT = np.concatenate((B, pr), axis = 1)
 
-  # calculate input sets for a time horizon T
+ 
   u0 = np.random.rand(4,1)
-  u1 = np.random.rand(4,1)
+  u1 = np.random.rand(4,1)                                   # inputs matrix
   U = np.concatenate((u0, u1), axis = 1)
-
+  
   for k in range(0, T-2):
       u = np.random.rand(4,1)
       U = np.concatenate((U, u), axis = 1)
-
-  xf = state_space(A, B, xi, U, T)
-
+  
+  xf = state_space(A, B, xi, U, T)                           # final state
 
   for i in range(0, T-2):
     p = np.dot(p, A)
@@ -42,68 +36,65 @@ def data_gen(A, B, xi, T):
   term1 = xf - np.dot(p, xi)  
   
 
-  for i in range(0, T-1):
+  for i in range(0, T-2):
     pr = np.dot(A, pr)
     CT = np.concatenate((CT, pr), axis = 1)
   
   term2 = np.linalg.pinv(CT)
+  
   umin = np.dot(term2, term1)
   
-  inputs_x = np.concatenate((xi, xf), axis = 0)
-  inputs = np.reshape(np.concatenate((inputs_x, [[T]]), axis = 0), (1, 7))
-  
-  
-  output = np.reshape(umin, (1,4))
-  
-  data = np.concatenate((inputs, output), axis = 0)
-  
-  return data
+  for i in range(0, T):
+      inputs_x = np.concatenate((xi, xf), axis = 0)
+      inputs_t = np.concatenate(([[i]], [[T]]), axis = 0)
+      inputs = np.concatenate((inputs_x, inputs_t), axis = 0)
+      inputs = np.reshape(inputs, (1,8))
+      
+      j = 4*i
+      output = umin[j:j+4, 0]
+      output = np.reshape(output, (1,4))
 
-  
+      single_data = np.concatenate((inputs, output), axis = 1)
+     
+      if i == 0 and T == 4:
+         np.savetxt('data.txt', single_data)
 
+      else:
+         with open('data.txt', 'ab') as f:
+            np.savetxt(f, single_data)
 
-# function call  
+       
 
-# Useful Equation: x(t+1) = Ax(t) + Bu(t)
-# matrices considered: diagonal and coupled (5 each)
+# Equation: x(t+1) = Ax(t) + Bu(t)
 
-
-filename = 'data.txt'
-f = open(filename, 'w')
 # for general systems
-for i in range(0, 5):
-   ac = np.random.rand(3,3)         # random matrix A
-   b = np.random.rand(3, 4)         # random matrix B
+for i in range(0, 1):
+   ac = np.random.rand(3,3)         # matrix A
+   b = np.random.rand(3, 4)         # matrix B
    
    T = [4,5,6,7,8,9,10]
-
-   for t in T:                      #iterate over all control horizons
+   
+   for t in T:                      
       for j in range(0, 100):
-        xi = np.random.rand(3,1)    # initial state 
-        
-        data = data_gen(ac, b, xi, t)
-        data.tofile(f, sep=' ', format='%22.14e')
-        f.write('\n')
-        
+        xi = np.random.rand(3,1)    # initial state
+        data_gen(ac, b, xi, t)
         
         
 
 # for decoupled dynamical systems
+# for i in range(0,5):
+#   d = np.random.random_integers(1, 100, 3)
+#   ac = np.diag(d)
+#   b = np.random.rand(3,4)
 
-for i in range(0,5):
-  d = np.random.random_integers(1, 100, 3)
-  ac = np.diag(d)
-  b = np.random.rand(3,4)
+#   T = [4,5,6,7,8,9,10]
 
-  T = [4,5,6,7,8,9,10]
+#   for t in T:
+#       for j in range(0, 100):
+#         xi = np.random.rand(3,1)      # initial state 
+#         z = 1
+#         data_gen(ac, b, xi, t, z)
 
-  for t in T:
-      for j in range(0, 100):
-        xi = np.random.rand(3,1)      # initial state 
-
-        data = data_gen(ac, b, xi, t)
-        data.tofile(f, sep=' ', format='%22.14e')
-        f.write('\n')
  
 
 
