@@ -112,14 +112,14 @@ def save_performance(plot_losses, model, Sb):
     val_losses = plot_losses.val_losses
  
 
-    out_dir = "viscosity_model_performance"
+    out_dir = "performance"
     os.makedirs(out_dir, exist_ok=True)
 
     np.savetxt(join(out_dir, "train_losses_batch_size_{}.txt".format(Sb)), train_losses)
     np.savetxt(join(out_dir, "val_losses_batch_size_{}.txt".format(Sb)), val_losses)
  
 
-    model.save_weights(join(out_dir,'MLP_viscosity_weights_batch_size_{}.h5'.format(Sb)))
+    model.save_weights(join(out_dir,'min_energy_inputs_weights{}.h5'.format(Sb)))
 
 
 def trainmlp(model, N, Sb, xv):
