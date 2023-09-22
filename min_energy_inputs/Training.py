@@ -7,21 +7,23 @@ from IPython.display import clear_output
 import matplotlib.pyplot as plt
 from keras.models import Sequential
 from keras.layers import Dense
-from keras.layers import Dropout 
 from keras import backend as k
 from keras.callbacks import EarlyStopping
-from sklearn.metrics import confusion_matrix
-import sklearn.metrics
 from os.path import join
 import io
 
 curr_dir = os.getcwd()
 data_file = os.path.join(curr_dir, "data.txt")
+test_file = os.path.join(curr_dir, "test_data.txt")
 
 data = np.loadtxt(data_file)
+test_data = np.loadtxt(test_file)
 
 np.random.shuffle(data)
 np.savetxt("data.txt", data)
+
+np.random.shuffle(test_data)
+np.savetxt("test_data.txt", test_data)
 
 d = np.loadtxt("data.txt")
 m = d.shape[0]
@@ -30,23 +32,39 @@ n = d.shape[1]
 mt = int(0.7*m)
 mv = m - mt
 
-xt = data[0:mt, 0:8]
-yt = data[0:mt, 8:12]
+dt = np.loadtxt("test_data.txt")
+m_test = dt.shape[0]
+n_test = dt.shape[1]
+print(m_test)
+print(n_test)
 
-xv = data[mt:-1, 0:8]
-yv = data[mt:-1, 8:12]
+xt = d[0:mt, 0:8]
+yt = d[0:mt, 8:12]
+
+xv = d[mt:-1, 0:8]
+yv = d[mt:-1, 8:12]
+
+x_test = dt[0:m_test, 0:8]
+y_test = dt[0:m_test, 8:12]
 
 
 class Trainingplot(tf.keras.callbacks.Callback):
     def on_train_begin(self, logs={}):
         self.losses = []
         self.val_losses = []
+        self.test_losses = []
         self.logs = []
 
     def on_epoch_end(self, epoch, logs={}):
         self.logs.append(logs)
         self.losses.append(logs.get('loss'))
         self.val_losses.append(logs.get('val_loss'))
+        
+        model = self.model
+
+        test_loss, test_acc = model.evaluate(x_test, y_test, verbose = 0)
+        self.test_losses.append(test_loss)
+
 
     
 
@@ -57,6 +75,7 @@ class Trainingplot(tf.keras.callbacks.Callback):
             plt.figure(figsize=(10, 6))
             plt.semilogy(N, self.losses, label='Train loss')
             plt.semilogy(N, self.val_losses, label='Validation loss')
+            plt.semilogy(N, self.test_losses, label = 'Test loss')
       
             plt.title('After epoch = {}'.format(epoch))
             plt.xlabel('Epoch #')
@@ -94,13 +113,11 @@ def NN(para):
 
     model = Sequential()
 
-    model.add(Dense(30, input_shape=(8,), activation=actf,
+    model.add(Dense(60, input_shape=(8,), activation=actf,
                     kernel_regularizer=reg, use_bias=True))
-    model.add(Dense(30, activation=actf, kernel_regularizer=reg, use_bias=True, kernel_initializer=ki))
-    model.add(Dense(30, activation=actf, kernel_regularizer=reg, use_bias=True, kernel_initializer=ki))
-    model.add(Dense(30, activation=actf, kernel_regularizer=reg, use_bias=True, kernel_initializer=ki))
-    model.add(Dense(30, activation=actf, kernel_regularizer=reg, use_bias=True, kernel_initializer=ki))
-    model.add(Dense(4, activation = 'softplus'))
+    model.add(Dense(40, activation=actf, kernel_regularizer=reg, use_bias=True, kernel_initializer=ki))
+    model.add(Dense(20, activation=actf, kernel_regularizer=reg, use_bias=True, kernel_initializer=ki))
+    model.add(Dense(4, activation = 'linear'))
 
     model.compile(optimizer=opt, loss= cost, metrics=['mse'])
 
@@ -126,7 +143,7 @@ def trainmlp(model, N, Sb, xv):
     plot_losses = Trainingplot()
     es = EarlyStopping(monitor = 'val_loss', mode = 'min', verbose = 1, patience = 100)
     result = model.fit(xt, yt, batch_size = Sb, epochs = N, verbose = 0, validation_data = (xv, yv),
-              shuffle=True, callbacks=[plot_losses, es])
+              shuffle=True, callbacks=[plot_losses])
     pred = model.predict(xv)
     save_performance(plot_losses, model, Sb)
 
@@ -139,7 +156,7 @@ para["v"] = 1.0e-3               # activation function parameter
 para["C"] = 'mean_squared_error' # cost function
 para["reg"] = 'l2'               # regularizer
 para["b"] = 1.0e-5               # regularization parameter
-N = 1000                       # maximum number of epochs
+N = 2000                       # maximum number of epochs
 Sb = 526                         # mini batch size
 # R = 3                            # Number of restarts
 
@@ -193,3 +210,41 @@ plt.legend()
 plt.savefig('comparison_3.png')
 
 plt.close()
+
+
+xt_true = x_test[0:50, 0:8]
+yt_true = y_test[0:50, 0:4]
+yt_pred = model.predict(xt_true)
+xn = len(yt_pred)
+N = np.arange(xn)
+
+
+plt.figure(figsize = (10,6))
+plt.plot(N, yt_true[:, 0], 'o', label = 'true')
+plt.plot(N, yt_pred[:,0], 'x', label = 'prediction')
+plt.legend()
+plt.savefig('test_comparison_0.png')
+plt.close()
+
+plt.figure(figsize = (10,6))
+plt.plot(N, yt_true[:, 1], 'o', label = 'true')
+plt.plot(N, yt_pred[:,1], 'x', label = 'prediction')
+plt.legend()
+plt.savefig('test_comparison_1.png')
+plt.close()
+
+plt.figure(figsize = (10,6))
+plt.plot(N, yt_true[:, 2], 'o', label = 'true')
+plt.plot(N, yt_pred[:,2], 'x', label = 'prediction')
+plt.legend()
+plt.savefig('test_comparison_2.png')
+plt.close()
+
+plt.figure(figsize = (10,6))
+plt.plot(N, yt_true[:, 3], 'o', label = 'true')
+plt.plot(N, yt_pred[:,3], 'x', label = 'prediction')
+plt.legend()
+plt.savefig('test_comparison_3.png')
+
+plt.close()
+
