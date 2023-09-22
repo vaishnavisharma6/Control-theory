@@ -66,9 +66,6 @@ class Trainingplot(tf.keras.callbacks.Callback):
         test_loss, test_acc = model.evaluate(x_test, y_test, verbose = 0)
         self.test_losses.append(test_loss)
 
-
-    
-
         if epoch > 1 and epoch % 50 == 0:  # callback function
             clear_output(wait=True)
             N = np.arange(0, len(self.losses))
@@ -172,11 +169,6 @@ model.summary()
 print("Training loss: ", model.evaluate(xt, yt))
 print("Validation loss:", model.evaluate(xv, yv))
 
-
-print(model.predict(np.array([[9.171582837282914458e-01, 8.558743579327012796e-01, 5.099792324279039946e-01, 2.222633837782698762e+01, 1.061409974041526461e+01, 3.605158571326493444e+01, 0.000000000000000000e+00, 5.000000000000000000e+00]])))
-print(model.predict(np.array([[7.093736547848090712e-01, 9.531747089934933248e-01, 5.045033568210737229e-01, 3.229588365018563678e+01, 1.498341170453137394e+01, 5.195573718505915650e+01, 4.000000000000000000e+00, 6.000000000000000000e+00]])))
-
-
 xtrue = xv[40:90, 0:8]
 ytrue = yv[40:90, 0:4]
 pred = model.predict(xtrue)
@@ -236,7 +228,7 @@ plt.close()
 
 plt.figure(figsize = (10,6))
 plt.plot(N, yt_true[:, 2], 'o', label = 'true')
-plt.plot(N, yt_pred[:,2], 'x', label = 'prediction')
+plt.plot(N, yt_pred[:,2], 'x', label = 'prediction')           #TO DO: Automate plotting process later!
 plt.legend()
 plt.savefig('test_comparison_2.png')
 plt.close()
