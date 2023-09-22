@@ -7,10 +7,8 @@ from IPython.display import clear_output
 import matplotlib.pyplot as plt
 from keras.models import Sequential
 from keras.layers import Dense
-from keras.layers import Dropout 
 from keras import backend as k
 from keras.callbacks import EarlyStopping
-from sklearn.metrics import confusion_matrix
 import sklearn.metrics
 from os.path import join
 import io
