@@ -9,6 +9,7 @@ from keras.models import Sequential
 from keras.layers import Dense
 from keras import backend as k
 from keras.callbacks import EarlyStopping
+import sklearn.metrics
 from os.path import join
 import io
 
