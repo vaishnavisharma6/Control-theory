@@ -40,20 +40,20 @@ print(m_test)
 print(n_test)
 
 xt = d[0:mt, 0:8]
-yt = d[0:mt, 8:12]
+yt = d[0:mt, 8:16]
 
 xv = d[mt:-1, 0:8]
-yv = d[mt:-1, 8:12]
+yv = d[mt:-1, 8:16]
 
 x_test = dt[0:m_test, 0:8]
-y_test = dt[0:m_test, 8:12]
+y_test = dt[0:m_test, 8:16]
 
 
 class Trainingplot(tf.keras.callbacks.Callback):
     def on_train_begin(self, logs={}):
         self.losses = []
         self.val_losses = []
-        self.test_losses = []
+        # self.test_losses = []
         self.logs = []
 
     def on_epoch_end(self, epoch, logs={}):
@@ -61,10 +61,10 @@ class Trainingplot(tf.keras.callbacks.Callback):
         self.losses.append(logs.get('loss'))
         self.val_losses.append(logs.get('val_loss'))
         
-        model = self.model
+        # model = self.model
 
-        test_loss, test_acc = model.evaluate(x_test, y_test, verbose = 0)
-        self.test_losses.append(test_loss)
+        # test_loss, test_acc = model.evaluate(x_test, y_test, verbose = 0)
+        # self.test_losses.append(test_loss)
 
         if epoch > 1 and epoch % 50 == 0:  # callback function
             clear_output(wait=True)
@@ -73,7 +73,7 @@ class Trainingplot(tf.keras.callbacks.Callback):
             plt.figure(figsize=(10, 6))
             plt.semilogy(N, self.losses, label='Train loss')
             plt.semilogy(N, self.val_losses, label='Validation loss')
-            plt.semilogy(N, self.test_losses, label = 'Test loss')
+            # plt.semilogy(N, self.test_losses, label = 'Test loss')
       
             plt.title('After epoch = {}'.format(epoch))
             plt.xlabel('Epoch #')
@@ -97,6 +97,7 @@ def NN(para):
 
     if actf == 'lReLU':
         actf = tf.keras.layers.LeakyReLU(actp)
+
     
     if actf == 'elu':
         actf = tf.keras.layers.ELU(1.0)
@@ -115,7 +116,7 @@ def NN(para):
                     kernel_regularizer=reg, use_bias=True))
     model.add(Dense(40, activation=actf, kernel_regularizer=reg, use_bias=True, kernel_initializer=ki))
     model.add(Dense(20, activation=actf, kernel_regularizer=reg, use_bias=True, kernel_initializer=ki))
-    model.add(Dense(4, activation = 'linear'))
+    model.add(Dense(8, activation = 'linear'))
 
     model.compile(optimizer=opt, loss= cost, metrics=['mse'])
 
@@ -154,7 +155,7 @@ para["v"] = 1.0e-3               # activation function parameter
 para["C"] = 'mean_squared_error' # cost function
 para["reg"] = 'l2'               # regularizer
 para["b"] = 1.0e-5               # regularization parameter
-N = 2000                       # maximum number of epochs
+N = 7000                       # maximum number of epochs
 Sb = 526                         # mini batch size
 # R = 3                            # Number of restarts
 
@@ -170,7 +171,7 @@ print("Training loss: ", model.evaluate(xt, yt))
 print("Validation loss:", model.evaluate(xv, yv))
 
 xtrue = xv[40:90, 0:8]
-ytrue = yv[40:90, 0:4]
+ytrue = yv[40:90, 0:8]
 pred = model.predict(xtrue)
 x = len(ytrue)
 N = np.arange(x)
@@ -201,12 +202,43 @@ plt.plot(N, ytrue[:, 3], 'o', label = 'true')
 plt.plot(N, pred[:,3], 'x', label = 'prediction')
 plt.legend()
 plt.savefig('comparison_3.png')
+plt.close()
 
+plt.figure(figsize = (10,6))
+plt.plot(N, ytrue[:, 4], 'o', label = 'true')
+plt.plot(N, pred[:,4], 'x', label = 'prediction')
+plt.legend()
+plt.savefig('comparison_4.png')
+plt.close()
+
+plt.figure(figsize = (10,6))
+plt.plot(N, ytrue[:, 5], 'o', label = 'true')
+plt.plot(N, pred[:,5], 'x', label = 'prediction')
+plt.legend()
+plt.savefig('comparison_5.png')
 plt.close()
 
 
+plt.figure(figsize = (10,6))
+plt.plot(N, ytrue[:, 6], 'o', label = 'true')
+plt.plot(N, pred[:,6], 'x', label = 'prediction')
+plt.legend()
+plt.savefig('comparison_6.png')
+plt.close()
+
+plt.figure(figsize = (10,6))
+plt.plot(N, ytrue[:, 7], 'o', label = 'true')
+plt.plot(N, pred[:,7], 'x', label = 'prediction')
+plt.legend()
+plt.savefig('comparison_7.png')
+plt.close()
+
+
+
+
+
 xt_true = x_test[0:50, 0:8]
-yt_true = y_test[0:50, 0:4]
+yt_true = y_test[0:50, 0:8]
 yt_pred = model.predict(xt_true)
 xn = len(yt_pred)
 N = np.arange(xn)
@@ -226,9 +258,10 @@ plt.legend()
 plt.savefig('test_comparison_1.png')
 plt.close()
 
+
 plt.figure(figsize = (10,6))
 plt.plot(N, yt_true[:, 2], 'o', label = 'true')
-plt.plot(N, yt_pred[:,2], 'x', label = 'prediction')           #TO DO: Automate plotting process later!
+plt.plot(N, yt_pred[:,2], 'x', label = 'prediction')
 plt.legend()
 plt.savefig('test_comparison_2.png')
 plt.close()
@@ -238,6 +271,32 @@ plt.plot(N, yt_true[:, 3], 'o', label = 'true')
 plt.plot(N, yt_pred[:,3], 'x', label = 'prediction')
 plt.legend()
 plt.savefig('test_comparison_3.png')
-
 plt.close()
 
+plt.figure(figsize = (10,6))
+plt.plot(N, yt_true[:, 4], 'o', label = 'true')
+plt.plot(N, yt_pred[:,4], 'x', label = 'prediction')
+plt.legend()
+plt.savefig('test_comparison_4.png')
+plt.close()
+
+plt.figure(figsize = (10,6))
+plt.plot(N, yt_true[:, 5], 'o', label = 'true')
+plt.plot(N, yt_pred[:,5], 'x', label = 'prediction')
+plt.legend()
+plt.savefig('test_comparison_5.png')
+plt.close()
+
+plt.figure(figsize = (10,6))
+plt.plot(N, yt_true[:, 6], 'o', label = 'true')
+plt.plot(N, yt_pred[:,6], 'x', label = 'prediction')
+plt.legend()
+plt.savefig('test_comparison_6.png')
+plt.close()
+
+plt.figure(figsize = (10,6))
+plt.plot(N, yt_true[:, 7], 'o', label = 'true')
+plt.plot(N, yt_pred[:,7], 'x', label = 'prediction')
+plt.legend()
+plt.savefig('test_comparison_7.png')
+plt.close()

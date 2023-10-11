@@ -12,10 +12,10 @@ data_dir = join(this_dir, "data.txt")
 test_dir = join(this_dir, "test_data.txt")
 
 
-def state_space(A, B, xi, U, T):
+def final_state(A, B, xi, U, T):
              
   for i in range(0, T):
-     xc = np.dot(A, xi) + np.dot(B, np.reshape(U[:, i], (4,1)))                          # return state at time T
+     xc = np.dot(A, xi) + np.dot(B, np.reshape(U[:, T-i-1], (2,1)))                          # return state at time T
      xi = xc
     
   return(xi)
@@ -28,15 +28,15 @@ def data_gen(A, B, xi, T):                                    # save data
   CT = np.concatenate((B, pr), axis = 1)
 
  
-  u0 = np.random.rand(4,1)
-  u1 = np.random.rand(4,1)                                   # inputs matrix
+  u0 = np.random.rand(2,1)
+  u1 = np.random.rand(2,1)                                   # inputs matrix
   U = np.concatenate((u0, u1), axis = 1)
   
   for k in range(0, T-2):
-      u = np.random.rand(4,1)
+      u = np.random.rand(2,1)
       U = np.concatenate((U, u), axis = 1)
   
-  xf = state_space(A, B, xi, U, T)                           # final state
+  xf = final_state(A, B, xi, U, T)                           # final state
 
   for i in range(0, T-2):
     p = np.dot(p, A)
@@ -57,10 +57,7 @@ def data_gen(A, B, xi, T):                                    # save data
       inputs_t = np.concatenate(([[i]], [[T]]), axis = 0)
       inputs = np.concatenate((inputs_x, inputs_t), axis = 0)
       inputs = np.reshape(inputs, (1,8))
-      
-      j = 4*i
-      output = umin[j:j+4, 0]
-      output = np.reshape(output, (1,4))
+      output = np.reshape(umin, (1,8))
 
       single_data = np.concatenate((inputs, output), axis = 1)
      
@@ -76,11 +73,13 @@ def data_gen(A, B, xi, T):                                    # save data
 # Equation: x(t+1) = Ax(t) + Bu(t)
 
 # for general systems
-for i in range(0, 5):
+for i in range(0, 1):
    ac = np.random.rand(3,3)         # matrix A
-   b = np.random.rand(3, 4)         # matrix B
-   
-   T = [4,5,6,7,8,9,10]
+   b = np.random.rand(3, 2)         # matrix B
+   at = ac
+   bt = b
+
+   T = [4]
    
    for t in T:                      
       for j in range(0, 100):
@@ -95,15 +94,15 @@ def data_gen_test(A, B, xi, T):                                    # save data
   CT = np.concatenate((B, pr), axis = 1)
 
  
-  u0 = np.random.rand(4,1)
-  u1 = np.random.rand(4,1)                                   # inputs matrix
+  u0 = np.random.rand(2,1)
+  u1 = np.random.rand(2,1)                                   # inputs matrix
   U = np.concatenate((u0, u1), axis = 1)
   
   for k in range(0, T-2):
-      u = np.random.rand(4,1)
+      u = np.random.rand(2,1)
       U = np.concatenate((U, u), axis = 1)
   
-  xf = state_space(A, B, xi, U, T)                           # final state
+  xf = final_state(A, B, xi, U, T)                           # final state
 
   for i in range(0, T-2):
     p = np.dot(p, A)
@@ -124,10 +123,8 @@ def data_gen_test(A, B, xi, T):                                    # save data
       inputs_t = np.concatenate(([[i]], [[T]]), axis = 0)
       inputs = np.concatenate((inputs_x, inputs_t), axis = 0)
       inputs = np.reshape(inputs, (1,8))
-      
-      j = 4*i
-      output = umin[j:j+4, 0]
-      output = np.reshape(output, (1,4))
+      output = np.reshape(umin, (1,8))
+     
 
       single_data = np.concatenate((inputs, output), axis = 1)
      
@@ -141,17 +138,17 @@ def data_gen_test(A, B, xi, T):                                    # save data
 
 
 # for decoupled dynamical systems, create test set
-for i in range(0,5):
-  ac = np.random.rand(3,3)
-  b = np.random.rand(3,4)
 
-  T = [4,5,6,7,8,9,10]
+  
+ 
 
-  for t in T:
-      for j in range(0, 100):
-        xi = np.random.rand(3,1)      # initial state 
-        z = 1
-        data_gen_test(ac, b, xi, t)
+T = [4]
+
+for t in T:
+    for j in range(0, 100):
+      xi = np.random.rand(3,1)      # initial state 
+      # z = 1
+      data_gen_test(at, bt, xi, t)
 
  
 
