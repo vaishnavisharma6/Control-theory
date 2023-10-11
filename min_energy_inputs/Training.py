@@ -39,14 +39,14 @@ n_test = dt.shape[1]
 print(m_test)
 print(n_test)
 
-xt = d[0:mt, 0:8]
-yt = d[0:mt, 8:16]
+xt = d[0:mt, 0:7]
+yt = d[0:mt, 7:15]
 
-xv = d[mt:-1, 0:8]
-yv = d[mt:-1, 8:16]
+xv = d[mt:-1, 0:7]
+yv = d[mt:-1, 7:15]
 
-x_test = dt[0:m_test, 0:8]
-y_test = dt[0:m_test, 8:16]
+x_test = dt[0:m_test, 0:7]
+y_test = dt[0:m_test, 7:15]
 
 
 class Trainingplot(tf.keras.callbacks.Callback):
@@ -112,10 +112,10 @@ def NN(para):
 
     model = Sequential()
 
-    model.add(Dense(60, input_shape=(8,), activation=actf,
+    model.add(Dense(5, input_shape=(7,), activation='linear',
                     kernel_regularizer=reg, use_bias=True))
-    model.add(Dense(40, activation=actf, kernel_regularizer=reg, use_bias=True, kernel_initializer=ki))
-    model.add(Dense(20, activation=actf, kernel_regularizer=reg, use_bias=True, kernel_initializer=ki))
+    # model.add(Dense(40, activation=actf, kernel_regularizer=reg, use_bias=True, kernel_initializer=ki))
+    # model.add(Dense(20, activation=actf, kernel_regularizer=reg, use_bias=True, kernel_initializer=ki))
     model.add(Dense(8, activation = 'linear'))
 
     model.compile(optimizer=opt, loss= cost, metrics=['mse'])
@@ -155,8 +155,8 @@ para["v"] = 1.0e-3               # activation function parameter
 para["C"] = 'mean_squared_error' # cost function
 para["reg"] = 'l2'               # regularizer
 para["b"] = 1.0e-5               # regularization parameter
-N = 7000                       # maximum number of epochs
-Sb = 526                         # mini batch size
+N = 30000                # maximum number of epochs
+Sb = 32                       # mini batch size
 # R = 3                            # Number of restarts
 
 print(para)
@@ -170,8 +170,8 @@ model.summary()
 print("Training loss: ", model.evaluate(xt, yt))
 print("Validation loss:", model.evaluate(xv, yv))
 
-xtrue = xv[40:90, 0:8]
-ytrue = yv[40:90, 0:8]
+xtrue = xv[0:30, 0:7]
+ytrue = yv[0:30, 0:8]
 pred = model.predict(xtrue)
 x = len(ytrue)
 N = np.arange(x)
@@ -237,8 +237,8 @@ plt.close()
 
 
 
-xt_true = x_test[0:50, 0:8]
-yt_true = y_test[0:50, 0:8]
+xt_true = x_test[0:30, 0:7]
+yt_true = y_test[0:30, 0:8]
 yt_pred = model.predict(xt_true)
 xn = len(yt_pred)
 N = np.arange(xn)

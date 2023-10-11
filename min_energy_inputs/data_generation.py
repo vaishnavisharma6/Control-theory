@@ -52,21 +52,21 @@ def data_gen(A, B, xi, T):                                    # save data
   
   umin = np.dot(term2, term1)
   
-  for i in range(0, T):
-      inputs_x = np.concatenate((xi, xf), axis = 0)
-      inputs_t = np.concatenate(([[i]], [[T]]), axis = 0)
-      inputs = np.concatenate((inputs_x, inputs_t), axis = 0)
-      inputs = np.reshape(inputs, (1,8))
-      output = np.reshape(umin, (1,8))
+  # for i in range(0, T):
+  inputs_x = np.concatenate((xi, xf), axis = 0)
+  # inputs_t = np.concatenate(([[i]], [[T]]), axis = 0)
+  inputs = np.concatenate((inputs_x, [[T]]), axis = 0)
+  inputs = np.reshape(inputs, (1,7))
+  output = np.reshape(umin, (1,8))
 
-      single_data = np.concatenate((inputs, output), axis = 1)
-     
-      if os.path.isfile(data_dir) == False:
-         np.savetxt('data.txt', single_data)
+  single_data = np.concatenate((inputs, output), axis = 1)
+    
+  if os.path.isfile(data_dir) == False:
+        np.savetxt('data.txt', single_data)
 
-      else:
-         with open('data.txt', 'ab') as f:
-            np.savetxt(f, single_data)
+  else:
+        with open('data.txt', 'ab') as f:
+          np.savetxt(f, single_data)
 
        
 
@@ -118,20 +118,19 @@ def data_gen_test(A, B, xi, T):                                    # save data
   
   umin = np.dot(term2, term1)
   
-  for i in range(0, T):
-      inputs_x = np.concatenate((xi, xf), axis = 0)
-      inputs_t = np.concatenate(([[i]], [[T]]), axis = 0)
-      inputs = np.concatenate((inputs_x, inputs_t), axis = 0)
-      inputs = np.reshape(inputs, (1,8))
-      output = np.reshape(umin, (1,8))
+  
+  inputs_x = np.concatenate((xi, xf), axis = 0)
+  inputs = np.concatenate((inputs_x, [[T]]), axis = 0)
+  inputs = np.reshape(inputs, (1,7))
+  output = np.reshape(umin, (1,8))
      
 
-      single_data = np.concatenate((inputs, output), axis = 1)
+  single_data = np.concatenate((inputs, output), axis = 1)
      
-      if os.path.isfile(data_dir) == False:
+  if os.path.isfile(data_dir) == False:
          np.savetxt('test_data.txt', single_data)
 
-      else:
+  else:
          with open('test_data.txt', 'ab') as f:
             np.savetxt(f, single_data)
 
