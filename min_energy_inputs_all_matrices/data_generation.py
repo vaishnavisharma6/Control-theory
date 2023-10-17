@@ -7,7 +7,7 @@ from os.path import join
 
 home_dir = os.path.expanduser('~')
 main_dir = join(home_dir, "Control-theory")
-this_dir = join(main_dir, "min_energy_inputs")
+this_dir = join(main_dir, "min_energy_inputs_all_matrices")
 data_dir = join(this_dir, "data.txt")
 test_dir = join(this_dir, "test_data.txt")
 
@@ -76,8 +76,7 @@ def data_gen(A, B, xi, T):                                    # save data
 for i in range(0, 10):
    ac = np.random.rand(3,3)         # matrix A
    b = np.random.rand(3, 2)         # matrix B
-   at = ac
-   bt = b
+   
 
    T = [4]
    
@@ -142,6 +141,8 @@ def data_gen_test(A, B, xi, T):                                    # save data
  
 
 T = [4]
+at = np.random.rand(3,3)
+bt = np.random.rand(3,2)
 
 for t in T:
     for j in range(0, 100):

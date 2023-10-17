@@ -41,6 +41,7 @@ print(n_test)
 
 xt = d[0:mt, 0:7]
 yt = d[0:mt, 7:15]
+print(np.shape(xt))
 
 xv = d[mt:-1, 0:7]
 yv = d[mt:-1, 7:15]

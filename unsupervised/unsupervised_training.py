@@ -11,9 +11,10 @@ from os.path import join
 
 curr_dir = os.getcwd()
 data_file = os.path.join(curr_dir, "unsupervised_data.txt")
+supervised_data = os.path.join(curr_dir, "supervised_data.txt")
 
 data = np.loadtxt(data_file)
-
+sdata = np.loadtxt(supervised_data)
 
 # define architecture
 
@@ -108,11 +109,15 @@ def save_performance(u, x, loss, lb):
 # function calls
 
 
-epochs = 60000
+epochs = 50000
 
 input = data
 input = tf.convert_to_tensor(input)
 input = tf.cast(input, tf.float32)
+sinput = sdata
+sinput = tf.convert_to_tensor(sinput)
+sinput = tf.cast(sinput, tf.float32)
+
 lb = 10
 u_norm, x_norm, loss, model = train(input, lb, epochs)
 save_performance(u_norm, x_norm, loss, lb)
@@ -126,22 +131,104 @@ print("loss:{}".format(loss[-1]))
 N = np.arange(0, len(u_norm))
 # loss plotting
 plt.figure(figsize=(15,10))
-plt.semilogy(N, u_norm, label = 'u norm')
 plt.xlabel('# epoch')
 plt.ylabel('u norm')
+plt.semilogy(N, u_norm,label = 'u norm')
+plt.semilogy(N, x_norm, label = 'x norm')
+plt.semilogy(N, loss, label = 'Total loss')
+plt.legend()
+
 plt.savefig('u_norm.png')
 
-plt.figure(figsize=(15,10))
-plt.semilogy(N, x_norm, label = 'u norm')
-plt.xlabel('# epoch')
-plt.ylabel('x norm')
-plt.savefig('x_norm.png')
 
-plt.figure(figsize=(15,10))
-plt.semilogy(N, loss, label = 'u norm')
-plt.xlabel('# epoch')
-plt.ylabel('loss')
-plt.savefig('loss.png')
+# plot ideal and predicted u_min
+U = input[:, 0:40]
+for i in range(5):
+    j = 8*i
+    a = alpha[:, i]
+    pred_umin = U[:, j:j+8] * a[:, tf.newaxis]
+
+print(np.shape(pred_umin))
+
+ideal_u = sinput[:, 58:66]
+
+N = np.arange(0, np.shape(U)[0])
+
+plt.figure(figsize = (10, 6))
+plt.plot(N, U[:, 0], 'x', label = 'predicted')
+plt.plot(N, ideal_u[:, 0],'o', label = 'ideal')
+plt.xlabel('# datapoint')
+plt.ylabel('1st element of u vector')
+plt.legend()
+plt.savefig('compare_0.png')
+
+plt.figure(figsize = (10, 6))
+plt.plot(N, U[:, 1], 'x', label = 'predicted')
+plt.plot(N, ideal_u[:, 1], 'o',label = 'ideal')
+plt.xlabel('# datapoint')
+plt.ylabel('2nd element of u vector')
+plt.legend()
+plt.savefig('compare_1.png')
+
+plt.figure(figsize = (10, 6))
+plt.plot(N, U[:, 2], 'x', label = 'predicted')
+plt.plot(N, ideal_u[:, 2], 'o',label = 'ideal')
+plt.xlabel('# datapoint')
+plt.ylabel('3rd element of u vector')
+plt.legend()
+plt.savefig('compare_2.png')
+
+plt.figure(figsize = (10, 6))
+plt.plot(N, U[:, 3], 'x', label = 'predicted')
+plt.plot(N, ideal_u[:, 3], 'o', label = 'ideal')
+plt.xlabel('# datapoint')
+plt.ylabel('4th element of u vector')
+plt.legend()
+plt.savefig('compare_3.png')
+
+plt.figure(figsize = (10, 6))
+plt.plot(N, U[:, 4], 'x', label = 'predicted')
+plt.plot(N, ideal_u[:, 4], 'o', label = 'ideal')
+plt.xlabel('# datapoint')
+plt.ylabel('5th element of u vector')
+plt.legend()
+plt.savefig('compare_4.png')
+
+plt.figure(figsize = (10, 6))
+plt.plot(N, U[:, 5], 'x', label = 'predicted')
+plt.plot(N, ideal_u[:, 5], 'o', label = 'ideal')
+plt.xlabel('# datapoint')
+plt.ylabel('6th element of u vector')
+plt.legend()
+plt.savefig('compare_5.png')
+
+plt.figure(figsize = (10, 6))
+plt.plot(N, U[:, 6], 'x', label = 'predicted')
+plt.plot(N, ideal_u[:, 6], 'o', label = 'ideal')
+plt.xlabel('# datapoint')
+plt.ylabel('7th element of u vector')
+plt.legend()
+plt.savefig('compare_6.png')
+
+plt.figure(figsize = (10, 6))
+plt.plot(N, U[:, 7], 'x', label = 'predicted')
+plt.plot(N, ideal_u[:, 7], 'o', label = 'ideal')
+plt.xlabel('# datapoint')
+plt.ylabel('8th element of u vector')
+plt.legend()
+plt.savefig('compare_7.png')
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

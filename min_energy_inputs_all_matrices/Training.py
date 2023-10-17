@@ -40,6 +40,7 @@ print(m_test)
 print(n_test)
 
 xt = d[0:mt, 0:7]
+print(np.shape(xt))
 yt = d[0:mt, 7:15]
 
 xv = d[mt:-1, 0:7]
@@ -118,7 +119,7 @@ def NN(para):
     model.add(Dense(64, activation=actf, kernel_regularizer=reg, use_bias=True, kernel_initializer=ki))
     model.add(Dense(32, activation=actf, kernel_regularizer=reg, use_bias=True, kernel_initializer=ki))
     model.add(Dense(16, activation=actf, kernel_regularizer=reg, use_bias=True, kernel_initializer=ki))
-    
+    model.add(Dense(8, activation = actf, kernel_regularizer=reg, kernel_initializer=ki, use_bias = True))
     model.add(Dense(8, activation = 'linear'))
 
     model.compile(optimizer=opt, loss= cost, metrics=['mse'])
