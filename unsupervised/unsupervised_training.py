@@ -14,6 +14,10 @@ data_file = os.path.join(curr_dir, "unsupervised_data.txt")
 supervised_data = os.path.join(curr_dir, "supervised_data.txt")
 
 data = np.loadtxt(data_file)
+m = np.shape(data)[0]
+n = np.shape(data)[1]
+print(m)
+print(n)
 sdata = np.loadtxt(supervised_data)
 
 # define architecture
@@ -33,36 +37,47 @@ def NN(para):
 
     model = Sequential()
 
-    model.add(Dense(512, input_shape=(58,), activation=actf, use_bias=True, kernel_initializer=ki))
-    model.add(Dense(128, activation=actf, use_bias=True, kernel_initializer=ki))
-    model.add(Dense(64, activation=actf, use_bias = True, kernel_initializer=ki))
-    model.add(Dense(32, activation=actf, use_bias=True, kernel_initializer=ki ))
-    model.add(Dense(5))
+    model.add(Dense(512, input_shape=(91,), activation='tanh', use_bias=True))
+    # model.add(Dense(64, activation='tanh', use_bias=True))
+    # model.add(Dense(32, activation='tanh', use_bias=True))
+    # model.add(Dense(16, activation='tanh', use_bias = True))
+    model.add(Dense(8))
 
     return model
-
-
 
 
 
 # loss function definition
 
 def loss_func(input, model):
-    with tf.GradientTape() as tape:
-        tape.watch(input)
-        X = input[:, 40:55]
-        U = input[:, 0:40]
-        xf = input[:, 55:58]
-        alpha = tf.cast(model(input), tf.float32)
-        
-        for i in range(5):
+    with tf.GradientTape() as t1:
+        t1.watch(input)
+        X = input[:, 64:88]
+        U = input[:, 0:64]
+        xf = input[:, 88:91]
+        alpha = model(input)
+    # print(alpha)
+    # print(tf.shape(alpha))
+        for i in range(8):
             j = 3 * i
             k = 8 * i
             a = alpha[:, i]
-            x_norm = tf.norm((xf - (X[:, j:j+3] * a[:, tf.newaxis])), ord = 'euclidean')
-            u_norm = tf.norm(U[:,k:k+8] * a[:, tf.newaxis], ord = 'euclidean')
-            x_norm = tf.reduce_mean(x_norm)
-                        
+            if i == 0:
+
+                x_norm = X[:, j:j+3] * a[:, tf.newaxis]
+                u_norm =  U[:,k:k+8]* a[:, tf.newaxis]
+            else:
+                x_norm = tf.add(x_norm,(X[:, j:j+3] * a[:, tf.newaxis]))
+                u_norm = tf.add(u_norm , (U[:,k:k+8]* a[:, tf.newaxis]))
+
+        xf_norm = xf -  x_norm
+        uf_norm = u_norm
+        x_norm = (tf.norm(xf_norm, ord = 'euclidean', axis = -1))**2
+        u_norm = (tf.norm(uf_norm, ord = 'euclidean', axis = -1))**2
+
+        x_norm = tf.reduce_mean(x_norm, axis= -1)
+        u_norm = tf.reduce_mean(u_norm, axis = -1)
+
     return x_norm, u_norm
 
 
@@ -85,9 +100,9 @@ def train(input, lb, epochs):
 
     for epoch in range(epochs):
         with tf.GradientTape() as tape:
-            x_norm, u_norm = loss_func(input, model)
-            loss = u_norm + (lb * x_norm)
-            loss += sum(model.losses)
+            x_norm, u_norm = loss_func(input = input, model= model)
+            loss = (u_norm) + (lb * x_norm)
+            print(loss)
         grads = tape.gradient(loss, model.trainable_variables)
         optimizer.apply_gradients(zip(grads, model.trainable_variables)) 
         u_norm_loc[epoch] = u_norm.numpy()
@@ -109,7 +124,7 @@ def save_performance(u, x, loss, lb):
 # function calls
 
 
-epochs = 50000
+epochs = 1000
 
 input = data
 input = tf.convert_to_tensor(input)
@@ -138,19 +153,20 @@ plt.semilogy(N, x_norm, label = 'x norm')
 plt.semilogy(N, loss, label = 'Total loss')
 plt.legend()
 
-plt.savefig('u_norm.png')
+plt.savefig('loss_{}.png'.format(lb))
 
 
 # plot ideal and predicted u_min
-U = input[:, 0:40]
-for i in range(5):
+U = input[:, 0:64]
+print(np.shape(U)[0])
+for i in range(8):
     j = 8*i
     a = alpha[:, i]
     pred_umin = U[:, j:j+8] * a[:, tf.newaxis]
 
 print(np.shape(pred_umin))
 
-ideal_u = sinput[:, 58:66]
+ideal_u = sinput[:, 91:99]
 
 N = np.arange(0, np.shape(U)[0])
 
@@ -160,7 +176,7 @@ plt.plot(N, ideal_u[:, 0],'o', label = 'ideal')
 plt.xlabel('# datapoint')
 plt.ylabel('1st element of u vector')
 plt.legend()
-plt.savefig('compare_0.png')
+plt.savefig('compare_0_{}.png'.format(lb))
 
 plt.figure(figsize = (10, 6))
 plt.plot(N, U[:, 1], 'x', label = 'predicted')
@@ -168,7 +184,7 @@ plt.plot(N, ideal_u[:, 1], 'o',label = 'ideal')
 plt.xlabel('# datapoint')
 plt.ylabel('2nd element of u vector')
 plt.legend()
-plt.savefig('compare_1.png')
+plt.savefig('compare_1_{}.png'.format(lb))
 
 plt.figure(figsize = (10, 6))
 plt.plot(N, U[:, 2], 'x', label = 'predicted')
@@ -176,7 +192,7 @@ plt.plot(N, ideal_u[:, 2], 'o',label = 'ideal')
 plt.xlabel('# datapoint')
 plt.ylabel('3rd element of u vector')
 plt.legend()
-plt.savefig('compare_2.png')
+plt.savefig('compare_2_{}.png'.format(lb))
 
 plt.figure(figsize = (10, 6))
 plt.plot(N, U[:, 3], 'x', label = 'predicted')
@@ -184,7 +200,7 @@ plt.plot(N, ideal_u[:, 3], 'o', label = 'ideal')
 plt.xlabel('# datapoint')
 plt.ylabel('4th element of u vector')
 plt.legend()
-plt.savefig('compare_3.png')
+plt.savefig('compare_3_{}.png'.format(lb))
 
 plt.figure(figsize = (10, 6))
 plt.plot(N, U[:, 4], 'x', label = 'predicted')
@@ -192,7 +208,7 @@ plt.plot(N, ideal_u[:, 4], 'o', label = 'ideal')
 plt.xlabel('# datapoint')
 plt.ylabel('5th element of u vector')
 plt.legend()
-plt.savefig('compare_4.png')
+plt.savefig('compare_4_{}.png'.format(lb))
 
 plt.figure(figsize = (10, 6))
 plt.plot(N, U[:, 5], 'x', label = 'predicted')
@@ -200,7 +216,7 @@ plt.plot(N, ideal_u[:, 5], 'o', label = 'ideal')
 plt.xlabel('# datapoint')
 plt.ylabel('6th element of u vector')
 plt.legend()
-plt.savefig('compare_5.png')
+plt.savefig('compare_5_{}.png'.format(lb))
 
 plt.figure(figsize = (10, 6))
 plt.plot(N, U[:, 6], 'x', label = 'predicted')
@@ -208,7 +224,7 @@ plt.plot(N, ideal_u[:, 6], 'o', label = 'ideal')
 plt.xlabel('# datapoint')
 plt.ylabel('7th element of u vector')
 plt.legend()
-plt.savefig('compare_6.png')
+plt.savefig('compare_6_{}.png'.format(lb))
 
 plt.figure(figsize = (10, 6))
 plt.plot(N, U[:, 7], 'x', label = 'predicted')
@@ -216,7 +232,7 @@ plt.plot(N, ideal_u[:, 7], 'o', label = 'ideal')
 plt.xlabel('# datapoint')
 plt.ylabel('8th element of u vector')
 plt.legend()
-plt.savefig('compare_7.png')
+plt.savefig('compare_7_{}.png'.format(lb))
 
 
 

@@ -25,7 +25,7 @@ def state_data(xi, U, A, B, xf, T):
       inputs =  np.concatenate((inputs, xt), axis = 0)
        
     inputs = np.concatenate((inputs, xf), axis = 0)
-    inputs = np.reshape(inputs, (1, 58))
+    inputs = np.reshape(inputs, (1, 91))
     return(inputs)
 
 
@@ -63,16 +63,20 @@ def min_energy_inputs(xi, U, Uf, A, B, T):
 
    return (inputs_ideal)   
 
+
+
+
+
 # function call
 
 A = np.random.rand(3,3)
 B = np.random.rand(3,2)
 
-N = 5
+N = 8
 T = 4
 xi = np.zeros((3,1))
 
-for i in range(0,20):
+for i in range(0,100):
 
    U = np.random.rand(8*N, 1)
 
