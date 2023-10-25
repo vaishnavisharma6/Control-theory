@@ -8,7 +8,7 @@ main_dir = join(home_dir, "Control-theory")
 this_dir = join(main_dir, "unsupervised")
 data_dir = join(this_dir, "unsupervised_data.txt")
 ideal_data_dir = join(this_dir, "supervised_data.txt")
-# test_dir = join(this_dir, "test_data_unsupervised.txt")
+
 
 def state_data(xi, U, A, B, xf, T):
     N = (np.shape(U)[0])//8
@@ -27,6 +27,7 @@ def state_data(xi, U, A, B, xf, T):
     inputs = np.concatenate((inputs, xf), axis = 0)
     inputs = np.reshape(inputs, (1, 91))
     return(inputs)
+
 
 
 def final_state(xi, Uf, A, B, T):
@@ -76,7 +77,7 @@ N = 8
 T = 4
 xi = np.zeros((3,1))
 
-for i in range(0,100):
+for i in range(0,80):
 
    U = np.random.rand(8*N, 1)
 
