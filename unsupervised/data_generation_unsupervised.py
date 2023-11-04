@@ -76,8 +76,8 @@ B = np.random.rand(3,2)
 N = 8
 T = 4
 xi = np.zeros((3,1))
-
-for i in range(0,80):
+n = 1
+for i in range(0,1):
 
    U = np.random.rand(8*N, 1)
 
@@ -86,7 +86,7 @@ for i in range(0,80):
    xf = final_state(xi, uf, A, B, T)
    input_data = state_data(xi, U, A, B, xf, T)
    ideal_data = min_energy_inputs(xi, U, uf, A, B, T)
-
+   # input_data = np.reshape(input_data, (1,91))
    if os.path.isfile(data_dir) == False:
       np.savetxt('unsupervised_data.txt', input_data)
 
@@ -102,5 +102,5 @@ for i in range(0,80):
          np.savetxt(f1, ideal_data)
 
 
-
+   
         
