@@ -11,29 +11,29 @@ ideal_data_dir = join(this_dir, "supervised_data.txt")
 
 
 def state_data(xi, U, A, B, xf, T):
-    N = (np.shape(U)[0])//8
+    N = (np.shape(U)[0])//12
     inputs = U
     for i in range(0,N):
-      m = 8*i
-      un = U[m:m+8]
+      m = 12*i
+      un = U[m:m+12]
       for j in range(0,T):
-        k = 2 * j
-        u = un[k:k+2]
+        k = 3 * j
+        u = un[k:k+3]
         xt = np.dot(A, xi) + np.dot(B, u)
         xi = xt
 
       inputs =  np.concatenate((inputs, xt), axis = 0)
        
     inputs = np.concatenate((inputs, xf), axis = 0)
-    inputs = np.reshape(inputs, (1, 91))
+    inputs = np.reshape(inputs, (1, 123))
     return(inputs)
 
 
 
 def final_state(xi, Uf, A, B, T):
    for i in range(T):
-      j = 2 * i
-      xt = np.dot(A, xi) + np.dot(B, Uf[j:j+2, :])
+      j = 3 * i
+      xt = np.dot(A, xi) + np.dot(B, Uf[j:j+3, :])
       xi = xt
    xf = xi  
    return(xf)  
@@ -54,36 +54,35 @@ def min_energy_inputs(xi, U, Uf, A, B, T):
    for i in range(0, T-2):
       pr = np.dot(A, pr)
       CT = np.concatenate((CT, pr), axis = 1)
-
+   
+   r = np.linalg.matrix_rank(CT)
+   print(r)
    term2 = np.linalg.pinv(CT)
 
    umin = np.dot(term2, term1)
-   umin = np.reshape(umin, (1,8))
+   umin = np.reshape(umin, (1,12))
    inputs = state_data(xi, U, A, B, xf, T)
    inputs_ideal = np.concatenate((inputs, umin), axis = 1)
 
    return (inputs_ideal)   
 
 
-
-
-
 # function call
 
 A = np.random.rand(3,3)
-B = np.random.rand(3,2)
+B = np.random.rand(3,3)
 
 N = 8
 T = 4
 xi = np.zeros((3,1))
 n = 1
+
+uf = np.random.rand(12,1)
+
+xf = final_state(xi, uf, A, B, T)
+
 for i in range(0,1):
-
-   U = np.random.rand(8*N, 1)
-
-   uf = np.random.rand(8,1)
-
-   xf = final_state(xi, uf, A, B, T)
+   U = np.random.rand(12*N, 1)
    input_data = state_data(xi, U, A, B, xf, T)
    ideal_data = min_energy_inputs(xi, U, uf, A, B, T)
    # input_data = np.reshape(input_data, (1,91))

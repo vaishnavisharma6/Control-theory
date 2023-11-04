@@ -43,13 +43,9 @@ def NN(para):
     # actf = 'sigmoid'
     model = Sequential()
 
-    model.add(Dense(40, input_shape=(91,), activation='sigmoid'))
-    # model.add(Dense(50, activation=actf))
-    # model.add(Dense(20, activation='sigmoid', use_bias=True))
-    # model.add(Dense(128, activation='tanh', use_bias = True))
-    # model.add(Dense(64, activation='tanh', use_bias = True))
-    # model.add(Dense(32, activation='tanh', use_bias = True))
-    # model.add(Dense(10, activation='sigmoid', use_bias = True))
+    model.add(Dense(10, input_shape=(120,), activation='sigmoid'))
+    model.add(Dense(10, activation = 'sigmoid'))
+
     model.add(Dense(8))
 
     return model
@@ -58,28 +54,28 @@ def NN(para):
 
 # loss function definition
 
-def loss_func(input, model):
+def loss_func(input, model, xf):
     with tf.GradientTape() as t1:
         t1.watch(input)
-        X = input[:, 64:88]
-        U = input[:, 0:64]
-        xf = input[:,88:91]
+        X = input[:, 96:120]
+        U = input[:, 0:96]
+        # xf = input[:,120:123]
         alpha = model(input)
-    # print(alpha)
+        print(alpha)
     # print(tf.shape(alpha))
         for i in range(8):
             j = 3 * i
-            k = 8 * i
+            k = 12 * i
             a = alpha[:,i]
             if i == 0:
 
                 x_norm = X[:,j:j+3] * a[:, tf.newaxis]
-                u_norm =  U[:,k:k+8]* a[:, tf.newaxis]
+                u_norm =  U[:,k:k+12]* a[:, tf.newaxis]
 
             else:
                 x_norm = tf.add(x_norm,(X[:,j:j+3] * a[:, tf.newaxis]))
                 # print(x_norm[0])
-                u_norm = tf.add(u_norm , (U[:,k:k+8]* a[:, tf.newaxis]))
+                u_norm = tf.add(u_norm , (U[:,k:k+12]* a[:, tf.newaxis]))
 
         xf_norm = xf -  x_norm
         # print(xf_norm[0])
@@ -96,7 +92,7 @@ def loss_func(input, model):
 
 
 # define training procedure and parameters
-def train(input, lb, epochs):
+def train(input, xf, lb, epochs):
     u_norm_loc = np.zeros(epochs)
     x_norm_loc = np.zeros(epochs)
     loss_loc = np.zeros(epochs)
@@ -104,8 +100,8 @@ def train(input, lb, epochs):
     tf.keras.backend.clear_session()
 
     para = dict()
-    para["A"] = 'elu'              # activation function for hidden layers
-    para["v"] = 1.0e-3            # activation function parameter               
+    para["A"] = 'lrelu'              # activation function for hidden layers
+    para["v"] = 1.0e-1           # activation function parameter               
 
     print(para)
     model = NN(para)
@@ -114,11 +110,11 @@ def train(input, lb, epochs):
 
     for epoch in range(epochs):
         with tf.GradientTape() as tape:
-            x_norm, u_norm = loss_func(input = input, model= model)
-            loss = (1 * x_norm) + (lb * u_norm)
+            x_norm, u_norm = loss_func(input = input, model= model, xf = xf)
+            loss =   (u_norm) + (100 * x_norm)
             print(loss)
-        grads = tape.gradient(loss, model.trainable_variables)
-        optimizer.apply_gradients(zip(grads, model.trainable_variables)) 
+            grads = tape.gradient(loss, model.trainable_variables)
+            optimizer.apply_gradients(zip(grads, model.trainable_variables)) 
         u_norm_loc[epoch] = u_norm.numpy()
         x_norm_loc[epoch] = x_norm.numpy()
         loss_loc[epoch] = loss.numpy()
@@ -139,8 +135,9 @@ def save_performance(x_norm, u_norm, loss, model):
 # function calls
 
 
-epochs = 5000
-input = data
+epochs = 10000
+input = data[0:120]
+xf = data[120:123]
 input = tf.convert_to_tensor(input)
 input = tf.cast(input, tf.float32)
 input = tf.expand_dims(input, axis = 0)
@@ -149,8 +146,8 @@ sinput = tf.convert_to_tensor(sinput)
 sinput = tf.cast(sinput, tf.float32)
 sinput = tf.expand_dims(sinput, axis = 0)
 
-lb = 0.001
-u_norm, x_norm, loss, model = train(input, lb, epochs)
+lb = 0.1
+u_norm, x_norm, loss, model = train(input, xf, lb, epochs)
 save_performance(x_norm, u_norm, loss, model)
 alpha = model.predict(input)
 print(alpha)
@@ -174,26 +171,26 @@ plt.savefig('loss.png')
 
 
 # plot ideal and predicted u_min
-U = input[:, 0:64]
+U = input[:, 0:96]
 print(np.shape(U)[0])
 for i in range(8):
-    j = 8*i
+    j = 12*i
     a = alpha[:, i]
 
     if i == 0:
-       pred_umin = U[:,j:j+8] * a[:, tf.newaxis]
+       pred_umin = U[:,j:j+12] * a[:, tf.newaxis]
     else:
-        pred_umin = tf.add(pred_umin, U[:,j:j+8] * a[:, tf.newaxis])   
+        pred_umin = tf.add(pred_umin, U[:,j:j+12] * a[:, tf.newaxis])   
 
 
 
 
 print(np.shape(pred_umin))
 
-ideal_u = sinput[:,91:99]
+ideal_u = sinput[:,123:135]
 
-print(pred_umin[0])
-print(ideal_u[0])
+print(pred_umin)
+print(ideal_u)
 
 N = np.arange(0, np.shape(U[0:40])[0])
 
@@ -201,15 +198,21 @@ pred_u_norm = tf.norm(pred_umin, ord = 'euclidean', axis = -1)
 ideal_u_norm = tf.norm(ideal_u, ord = 'euclidean', axis = -1)
 
 plt.figure(figsize = (10, 6))
-plt.plot(N, pred_u_norm[0:40], 'x', label = 'prediction')
-plt.plot(N, ideal_u_norm[0:40],'o', label = 'ideal')
+# plt.plot(N, pred_u_norm[0:40], 'x', label = 'prediction')
+plt.plot(N, np.abs(ideal_u_norm-pred_u_norm),'o', label = 'difference')
+plt.xlabel('# datapoint')
+plt.ylabel('minimum energy input norm difference')
+plt.legend()
+plt.savefig('compare_diff.png')
+
+
+plt.figure(figsize = (10, 6))
+plt.plot(N, pred_u_norm, 'x', label = 'prediction')
+plt.plot(N, ideal_u_norm,'o', label = 'ideal')
 plt.xlabel('# datapoint')
 plt.ylabel('minimum energy input norm difference')
 plt.legend()
 plt.savefig('compare_norm.png')
-
-
-
 
 
 
