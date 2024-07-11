@@ -43,10 +43,11 @@ def NN(para):
     # actf = 'sigmoid'
     model = Sequential()
 
-    model.add(Dense(10, input_shape=(120,), activation='sigmoid'))
-    model.add(Dense(10, activation = 'sigmoid'))
+    model.add(Dense(50, input_shape=(180,), activation='sigmoid', kernel_initializer=ki))
+    model.add(Dense(50, activation = 'sigmoid', kernel_initializer=ki))
+    # model.add(Dense(128, activation = actf))
 
-    model.add(Dense(8))
+    model.add(Dense(12))
 
     return model
 
@@ -57,13 +58,13 @@ def NN(para):
 def loss_func(input, model, xf):
     with tf.GradientTape() as t1:
         t1.watch(input)
-        X = input[:, 96:120]
-        U = input[:, 0:96]
+        X = input[:, 144:180]
+        U = input[:, 0:144]
         # xf = input[:,120:123]
         alpha = model(input)
-        print(alpha)
+        # print(alpha)
     # print(tf.shape(alpha))
-        for i in range(8):
+        for i in range(12):
             j = 3 * i
             k = 12 * i
             a = alpha[:,i]
@@ -83,7 +84,7 @@ def loss_func(input, model, xf):
         x_norm = tf.square(tf.norm(xf_norm, ord = 'euclidean', axis = -1))
         # print(x_norm)
         u_norm = tf.square(tf.norm(uf_norm, ord = 'euclidean', axis = -1))
-
+        print(u_norm)
         x_norm = tf.reduce_mean(x_norm, axis= 0)
         u_norm = tf.reduce_mean(u_norm, axis = -1)
 
@@ -111,10 +112,10 @@ def train(input, xf, lb, epochs):
     for epoch in range(epochs):
         with tf.GradientTape() as tape:
             x_norm, u_norm = loss_func(input = input, model= model, xf = xf)
-            loss =   (u_norm) + (100 * x_norm)
+            loss =   (u_norm) + (lb * x_norm)
             print(loss)
             grads = tape.gradient(loss, model.trainable_variables)
-            optimizer.apply_gradients(zip(grads, model.trainable_variables)) 
+        optimizer.apply_gradients(zip(grads, model.trainable_variables)) 
         u_norm_loc[epoch] = u_norm.numpy()
         x_norm_loc[epoch] = x_norm.numpy()
         loss_loc[epoch] = loss.numpy()
@@ -135,9 +136,9 @@ def save_performance(x_norm, u_norm, loss, model):
 # function calls
 
 
-epochs = 10000
-input = data[0:120]
-xf = data[120:123]
+epochs = 5000
+input = data[0:180]
+xf = data[168:171]
 input = tf.convert_to_tensor(input)
 input = tf.cast(input, tf.float32)
 input = tf.expand_dims(input, axis = 0)
@@ -171,9 +172,9 @@ plt.savefig('loss.png')
 
 
 # plot ideal and predicted u_min
-U = input[:, 0:96]
+U = input[:, 0:144]
 print(np.shape(U)[0])
-for i in range(8):
+for i in range(12):
     j = 12*i
     a = alpha[:, i]
 
@@ -187,7 +188,7 @@ for i in range(8):
 
 print(np.shape(pred_umin))
 
-ideal_u = sinput[:,123:135]
+ideal_u = sinput[:,171:183]
 
 print(pred_umin)
 print(ideal_u)
@@ -215,7 +216,8 @@ plt.legend()
 plt.savefig('compare_norm.png')
 
 
-
+print(u_norm[-1])
+print(pred_u_norm)
 
 
 
