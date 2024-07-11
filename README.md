@@ -1,5 +1,5 @@
 # Control-theory
-Analysing performance of deep learning methods in computing minimum energy control inputs for linear dynamical systems (without explicitly finding system dynamics).
-This repo contains codes for both supervised and unsupervised (constrained optimization) approaches.
+
+This repo contains code for finding minimum energy control inputs for linear dynamical systems using Multi-layer perceptrons. Both supervised and unsupervised approaches have been implemented.
 
 
